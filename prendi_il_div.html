@@ -1,0 +1,199 @@
+<!-- 
+    Creare un div contenitore che rappresenta l'area di gioco. aggiungere all interno un div quadrato. 
+    Il div si muove casualmente e velocemente all interno dell'area di gioco. L'utente deve riuscire a cliccarlo. 
+    Tenere traccia dei click corretti e scorretti mostare il rapporto successo/insuccesso in un paragrafo.
+ -->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+
+<head>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <audio src="Audio/bg.wav" id="bg"></audio>
+  <audio src="Audio/field.wav" id="field"></audio>
+  <audio src="Audio/start.wav" id="start"></audio>
+  <audio src="Audio/win.wav" id="win"></audio>
+  <audio src="Audio/point.wav" id="point"></audio>
+  <audio src="Audio/lose.wav" id="lose"></audio>
+
+</body>
+<script>
+
+ //effetti audio
+  let audioBg = document.getElementById('bg')
+  let audioField = document.getElementById('field')
+  let audioStart = document.getElementById('start')
+  let audioWin = document.getElementById('win')
+  let audioPoint = document.getElementById('point')
+  let audioLose = document.getElementById('lose')
+
+  //punti effettivi
+  let pointsView = 0
+  let errorView = 0
+  let inGame = false
+ // let gamesWin = 0
+ // let gamesLoses = 0
+
+  //struttura HTML
+  let hero = document.createElement('div')
+  let title = document.createElement('p')
+  let field = document.createElement('div')
+  let fragment = document.createDocumentFragment()
+  let moveDiv = document.createElement('div')
+  let section = document.createElement('div')
+  let btn = document.createElement('button')
+  let score = document.createElement('div')
+  let bottomSection = document.createElement('div')
+  let txtPoints = document.createElement('p')
+  let frag = document.createDocumentFragment()
+  let txtError = document.createElement('p')
+  let error = document.createElement('p')
+  let points = document.createElement('p')
+  let container = document.createElement('div')
+  let btn2 = document.createElement('button')
+  let win = document.createElement('p')
+  let lose = document.createElement('p')
+  let end = document.createDocumentFragment()
+
+  //classi CSS
+  moveDiv.classList = ('move')
+  hero.classList = ('hero')
+  field.classList = ('field')
+  section.classList = ('sect')
+  score.classList = 'score'
+  container.classList = ('container')
+  btn.classList = ('btn')
+  bottomSection.classList = ('btm')
+  btn2.classList = ('btn')
+
+
+  title.textContent = 'PRENDI IL DIV!'
+  btn.textContent = 'INIZIA!'
+  txtPoints.textContent = 'PUNTI: '
+  error.textContent = errorView
+  txtError.textContent = 'ERRORI: '
+  points.textContent = pointsView
+  btn2.textContent = 'RESUME'
+
+
+  //append nel DOM della struttura
+  document.body.append(container)
+  document.body.append(section)
+  fragment.append(hero, field)
+  container.append(fragment)
+  hero.append(title)
+  field.append(moveDiv)
+  frag.append(txtPoints, points, txtError, error)
+  bottomSection.append(frag)
+  section.append(btn)
+  section.append(btn2)
+  section.append(score)
+  score.append(bottomSection)
+  end.append(win, lose)
+  field.append(end)
+
+
+
+
+  //dichiaro variabili per il movimento del div
+  let fieldRect = field.getBoundingClientRect();  //questo metodo ritorna un oggetto DomRect che ha al suo interno: top, right, left, bottom, x, y, width, height
+  let moveRect = moveDiv.getBoundingClientRect();
+  let maxX = fieldRect.width - moveRect.width;   //sottraendo la width di field e del Div, credo un bordo invalicabile
+  let maxY = fieldRect.height - moveRect.height;  //sottraendo la heigth di field e del Div, credo un bordo invalicabile
+
+  //posizione randomica asse x
+  function randomFunX() {
+    let randomX = Math.floor(Math.random() * maxX);
+    // console.log(randomX);
+    return randomX;
+  }
+  //posizione randomica asse y
+  function randomFunY() {
+    let randomY = Math.floor(Math.random() * maxY);
+    console.log(randomY);
+    return randomY;
+  }
+
+  //movimento dato dalle due funzioni precedenti, posizione effettiva data da left/top
+  function move() {
+    let randomX = randomFunX();
+    let randomY = randomFunY();
+    moveDiv.style.left = randomX + 'px';
+    moveDiv.style.top = randomY + 'px';
+  }
+
+  //inizio gioco
+  btn.addEventListener('click', function (event) {
+    inGame = true
+    audioStart.play()
+    event.stopPropagation()
+    startMovement();
+  });
+
+  //richiamo la funzione che genera posizione e controlli ogni secondo tramite un setTimeout
+  function startMovement() {
+    setInterval(movement, 1000);
+  }
+
+  //funzione che genera posizione ed effettua i controlli
+  function movement() {
+    check()
+    move();
+  }
+
+  //punto, hai premuto il div
+  moveDiv.onclick = function (event) {
+    event.stopPropagation()
+    audioPoint.play();
+    if(inGame){
+    pointsView++
+    points.textContent = pointsView
+    }
+  }
+
+  //errore, hai premuto il campo da gioco
+  field.onclick = function (event) {
+    audioField.play()
+    event.stopPropagation()
+    if(inGame){
+      errorView++
+      error.textContent = errorView
+    }
+
+  }
+
+  //controlli vittoria/sconfitta 
+  function check() {
+    if (points.textContent === "10") {    
+      audioWin.play()
+     // moveDiv.style.display = 'none' 
+      win.textContent = 'Hai vinto!'
+      // gamesWin++
+      inGame = false
+    } else if (error.textContent === "10") {
+      // audioLose.play()
+      moveDiv.style.display = 'none' 
+      // gamesLoses++
+      lose.textContent = 'Hai perso!'
+      inGame = false
+
+    }
+  }
+
+  //reset del gioco 
+  btn2.onclick = function reset() {
+    audioStart.play()
+    points.textContent = 0;
+    pointsView = 0
+    error.textContent = 0
+    errorView = 0
+    win.textContent = '';
+    lose.textContent = '';
+    moveDiv.style.display = 'inherit'
+
+  }
+</script>
+
+</html>
